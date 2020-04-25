@@ -1,6 +1,7 @@
 # Imagine you've got some code that calculates the fuel efficiency of a car:
 ARGUMENT: Value you pass into function.
 PARAMETER: Variable that accepts a Value inside the function.
+
 car = {"make": "Ford", "model": "Fiesta", "mileage": 23000, "fuel_consumed": 460}
 
 mpg = car["mileage"] / car["fuel_consumed"]
@@ -25,6 +26,8 @@ calculate_mpg()
 
 car = {"make": "Ford", "model": "Fiesta", "mileage": 23000, "fuel_consumed": 460}
 
+# car_to_calculate is the parameter because it is storing the value of the car.
+
 
 def calculate_mpg(car_to_calculate):  # This can be renamed to `car`
     mpg = car_to_calculate["mileage"] / car_to_calculate["fuel_consumed"]
@@ -33,6 +36,8 @@ def calculate_mpg(car_to_calculate):  # This can be renamed to `car`
 
 
 calculate_mpg(car)
+
+# in the above code car is the argument which is passing the value to our new varaiable car_to_calculate.
 
 # This means that given a list of cars with the correct data format, we can run the function for all of them!
 
