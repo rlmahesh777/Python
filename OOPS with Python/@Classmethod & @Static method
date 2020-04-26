@@ -1,0 +1,227 @@
+"""
+We’ve looked at how we can define classes and methods, including some special methods like `__init__` and `__len__`.
+
+All these methods had something in common: the `self` parameter at the start. As a reminder, here’s some code:
+"""
+
+class Student:
+    def __init__(self, name, school):
+        self.name = name
+        self.school = school
+        self.marks = []
+
+    def average(self):
+        return sum(self.marks) / len(self.marks)
+
+"""
+When we create a new object from the `Student` class and we call a method, we are automagically passing in the `self` parameter:
+"""
+
+rolf = Student('Rolf', 'MIT')
+
+rolf.marks.append(78)
+rolf.marks.append(99)
+
+print(rolf.average())
+
+"""
+This is identical to that last line:
+"""
+
+print(Student.average(rolf))
+
+"""
+When we do `object.method()`, Python is in the background calling `Class.method(object)`, so that `self` is always the object that called the method.
+
+Indeed, if we were to have two objects:
+"""
+
+rolf = Student('Rolf', 'MIT')
+anne = Student('Anne', 'Cambridge')
+
+rolf.marks.append(78)
+rolf.marks.append(99)
+
+anne.marks.append(34)
+anne.marks.append(56)
+
+print(rolf.average())
+print(anne.average())
+
+"""
+In the first case, `self` would be the `rolf` object, and in the second case `self` would be the `anne` object.
+
+Notice that this knowledge now lets us do some very weird stuff (not recommended, as it’ll likely break things):
+"""
+
+Student.average('hello')  # self is now 'hello', comment this out to run the rest of the file.
+
+"""
+Just remember `self` is a parameter like any other; and you can give it any value you want. However, because the method is then accessing `’hello’.marks`, you’ll get an error for the string doesn’t have that property.
+
+Anyway, so why is this important?
+
+The first type of method we’ve looked at is called “instance method”: one that takes the caller object as the first argument (that’s `self`).
+
+There are two more types of method:
+
+* One that takes the caller’s class as the first argument; and
+* One that takes nothing as the first argument.
+"""
+
+## @classmethod
+"""
+Let’s look at the one that takes the caller’s class as the first argument.
+"""
+
+class Foo:
+  @classmethod
+  def hi(cls):
+    print(cls.__name__)
+
+my_object = Foo()
+my_object.hi()  # prints Foo
+
+## @staticmethod
+"""
+Now one that takes nothing as the first argument.
+"""
+
+class Foo:
+  @staticmethod
+  def hi():
+    print("I don't take arguments!")
+
+my_object = Foo()
+my_object.hi()
+
+"""
+Those are some terrible examples! Let’s look at some more in the next section.
+"""
+-----------------------------------------
+
+
+
+"""
+Those were some terrible examples in the last section, but I just wanted to show you the syntax for these two types of method.
+
+The `@...` is called a decorator. Those are important in Python, and we’ll be looking at creating our own later on. They are used to modify the function directly below them.
+"""
+
+class FixedFloat:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def __repr__(self):
+        return f'<FixedFloat {self.amount:.2f}>'
+
+number = FixedFloat(18.5746)
+print(number)  # 18.57
+
+"""
+We have this `FixedFloat` class that is really basic—doesn’t really do anything other than print the number out to two decimal places with the class name.
+
+Imagine we wanted to get a new `FixedFloat` object which is a result of summing two numbers together:
+"""
+
+class FixedFloat:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def __repr__(self):
+        return f'<FixedFloat {self.amount:.2f}>'
+
+    def from_sum(self, value1, value2):
+        return FixedFloat(value1 + value2)
+
+number = FixedFloat(18.5746)
+new_number = number.from_sum(19.575, 0.789)
+print(new_number)
+
+"""
+This doesn’t make any sense, because we created a `FixedFloat` object (`number`), and then proceeded to call an instance method to create a new object. But that instance method didn’t use `self` at all—so really the fact that it’s a method inside a class is not very useful.
+
+Instead, we could make it a `@staticmethod`. That way, we’re not getting `self` but we can still put the method in the class, since it is _related_ to the class:
+"""
+
+class FixedFloat:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def __repr__(self):
+        return f'<FixedFloat {self.amount:.2f}>'
+
+    @staticmethod
+    def from_sum(value1, value2):
+        return FixedFloat(value1 + value2)
+
+static_number = FixedFloat.from_sum(19.575, 0.789)
+print(static_number)
+
+"""
+That looks a bit better! Now we don’t have the useless parameter AND we don’t need to create an object before we can call the method. Win-win!
+
+However, let’s now include some inheritance. We’ll create a `Currency` class that extends this `Float` class.
+"""
+
+class Euro(FixedFloat):
+    def __init__(self, amount):
+        super().__init__(amount)
+        self.symbol = '€'
+
+    def __repr__(self):
+        return f'<Euro {self.symbol}{self.amount:.2f}>'
+
+    # Skip defining from_sum as that's inherited
+
+"""
+We’ve defined this new class that extends the `FixedFloat ` class. It’s got an `__init__` method that calls the parent’s `__init__`, and a `__repr__` method that overrides the parents’. It doesn’t have a `from_sum` method as that’s inherited and we’ll just use the one the parent defined.
+"""
+
+euros = Euro(18.5963)
+print(euros)  # <Euro €18.59>
+
+result = Euro.from_sum(15.76, 19.905)
+print(result)  # <FixedFloat 35.66>
+
+"""
+Oops! When we called the `Euro` constructor directly, we got a `Euro ` object with the symbol. But when we call `from_sum`, we got a `FixedFloat ` object. Not what we wanted!
+
+In order to fix this, we must make the `from_sum` method return an object of the class that called it—so that:
+
+* `FixedFloat.from_sum()` returns a `FixedFloat ` object; and
+* `Euro.from_sum()` returns an `Euro` object.
+
+`@classmethod` to the rescue! If we modify the `FixedFloat` class:
+"""
+
+class FixedFloat:
+    def __init__(self, amount):
+        self.amount = amount
+
+    def __repr__(self):
+        return f'<FixedFloat {self.amount:.2f}>'
+
+    @classmethod
+    def from_sum(cls, value1, value2):
+        return cls(value1 + value2)
+
+
+class Euro(FixedFloat):
+    def __init__(self, amount):
+        super().__init__(amount)
+        self.symbol = '€'
+
+    def __repr__(self):
+        return f'<Euro {self.symbol}{self.amount:.2f}>'
+
+"""
+When we now call:
+
+* `Euro.from_sum()`, `cls` is the `Euro` class.
+* `FixedFloat.from_sum()`, `cls` is the `FixedFloat` class.
+"""
+
+print(Euro.from_sum(16.7565, 90))  # <Euro €106.75>
+
+
