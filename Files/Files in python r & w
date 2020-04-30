@@ -7,6 +7,8 @@ print(file_content)
 
 #Writing into a file
 
+#### W -MODE will overwrite the files ###
+
 user = input("Enter new content: ") 
 my_file = open("data.txt", "w") #open a file to write into that
 my_file.write(user) #write inti the file with "w" mode
