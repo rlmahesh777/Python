@@ -1,0 +1,14 @@
+#Reading a file
+
+my_file = open("data.txt" , "r")  # open a file with "r" - reading mode
+file_content = my_file.read()
+my_file.close() #we have a limit to open number of files so, we have to close the file
+print(file_content)
+
+#Writing into a file
+
+user = input("Enter new content: ") 
+my_file = open("data.txt", "w") #open a file to write into that
+my_file.write(user) #write inti the file with "w" mode
+my_file.close()
+print(file_content)
